@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无敌少侠宇宙 · 分步命运抽卡</title>
+    <style>
+        :root {
+            --blood-red: #8B0000;
+            --viltrum-gold: #D4AF37;
+            --space-black: #0a0a0f;
+            --nebula-purple: #1a0a2e;
+            --energy-cyan: #00d4ff;
+            --star-white: #f0f0f5;
+            --flaxan-orange: #ff6b35;
+            --coalition-blue: #2563eb;
+            --success-green: #22c55e;
+            --danger-red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Noto Sans SC', sans-serif;
+            background: var(--space-black);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--star-white);
+        }
+
+        .stars {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--blood-red), var(--viltrum-gold), var(--energy-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+        .header .subtitle {
+            font-size: 1rem;
+            color: rgba(240, 240, 245, 0.5);
+            letter-spacing: 2px;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0 30px;
+            flex-wrap: wrap;
+        }
+        .progress-step {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(240,240,245,0.4);
+            transition: all 0.3s ease;
+        }
+        .progress-step.active {
+            background: linear-gradient(135deg, rgba(139,0,0,0.3), rgba(212,175,55,0.2));
+            border-color: var(--viltrum-gold);
+            color: var(--viltrum-gold);
+            box-shadow: 0 0 15px rgba(212,175,55,0.2);
+        }
+        .progress-step.done {
+            background: rgba(34,197,94,0.15);
+            border-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        /* 主卡片 */
+        .main-card {
+            background: linear-gradient(135deg, rgba(26,10,46,0.9), rgba(10,10,15,0.95));
+            border: 2px solid rgba(212,175,55,0.3);
+            border-radius: 20px;
+            padding: 35px;
+            margin: 20px 0;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--blood-red), var(--viltrum-gold), var(--energy-cyan));
+            background-size: 300% 100%;
+            animation: gradientMove 3s linear infinite;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--viltrum-gold);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        .step-desc {
+            text-align: center;
+            color: rgba(240,240,245,0.5);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 35px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: 1px;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blood-red), #ff3333);
+            border-color: var(--viltrum-gold);
+            color: white;
+            box-shadow: 0 0 20px rgba(139,0,0,0.4);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 0 35px rgba(139,0,0,0.6);
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1));
+            border-color: var(--success-green);
+            color: var(--success-green);
+        }
+        .btn-yes:hover:not(:disabled) {
+            background: rgba(34,197,94,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-no {
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1));
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+            margin-left: 15px;
+        }
+        .btn-no:hover:not(:disabled) {
+            background: rgba(239,68,68,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05));
+            border-color: var(--energy-cyan);
+            color: var(--energy-cyan);
+            margin-top: 20px;
+        }
+        .btn-next:hover:not(:disabled) {
+            background: rgba(0,212,255,0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-area {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* 结果显示 */
+        .result-box {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid var(--viltrum-gold);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: var(--energy-cyan);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .result-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--star-white);
+        }
+        .result-value .rare-name {
+            color: var(--viltrum-gold);
+            text-shadow: 0 0 10px rgba(212,175,55,0.3);
+        }
+        .result-value .rarity-tag {
+            font-size: 0.75rem;
+            padding: 2px 10px;
+            border-radius: 10px;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+        .rarity-common { background: rgba(128,128,128,0.3); color: #aaa; }
+        .rarity-rare { background: rgba(0,212,255,0.15); color: var(--energy-cyan); }
+        .rarity-epic { background: rgba(157,78,221,0.2); color: #c77dff; }
+        .rarity-legendary { background: rgba(212,175,55,0.2); color: var(--viltrum-gold); }
+        .rarity-mythic { background: rgba(255,0,85,0.2); color: #ff6b9d; }
+
+        .result-detail {
+            font-size: 0.9rem;
+            color: rgba(240,240,245,0.6);
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        /* 能力数量选择 */
+        .ability-count-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .count-option {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            color: var(--star-white);
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .count-option:hover {
+            border-color: var(--viltrum-gold);
+            background: rgba(212,175,55,0.1);
+            transform: scale(1.1);
+        }
+        .count-option.selected {
+            border-color: var(--viltrum-gold);
+            background: linear-gradient(135deg, rgba(139,0,0,0.3), rgba(212,175,55,0.2));
+            box-shadow: 0 0 20px rgba(212,175,55,0.3);
+        }
+
+        /* 能力逐个显示 */
+        .ability-slot {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ability-slot.empty {
+            border-style: dashed;
+            color: rgba(240,240,245,0.3);
+        }
+        .ability-slot.filled {
+            border-color: var(--viltrum-gold);
+            animation: fadeIn 0.4s ease-out;
+        }
+        .ability-info {
+            flex: 1;
+        }
+        .ability-name {
+            font-weight: 700;
+            color: var(--viltrum-gold);
+            font-size: 1.1rem;
+        }
+        .ability-source {
+            font-size: 0.8rem;
+            color: rgba(240,240,245,0.5);
+            margin-top: 3px;
+        }
+
+        /* 事件询问 */
+        .event-question {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .event-question .event-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--viltrum-gold);
+            margin-bottom: 8px;
+        }
+        .event-question .event-desc {
+            font-size: 0.9rem;
+            color: rgba(240,240,245,0.6);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .event-question .event-era {
+            font-size: 0.8rem;
+            color: var(--energy-cyan);
+            margin-bottom: 15px;
+        }
+        .event-question.answered {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .event-question.participated {
+            border-color: var(--success-green);
+            background: rgba(34,197,94,0.05);
+        }
+        .event-question.skipped {
+            border-color: var(--danger-red);
+            background: rgba(239,68,68,0.05);
+            opacity: 0.5;
+        }
+
+        /* 势力结果 */
+        .faction-result {
+            margin-top: 15px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .faction-viltrum { background: rgba(139,0,0,0.2); border: 1px solid var(--blood-red); color: #ff6b6b; }
+        .faction-coalition { background: rgba(37,99,235,0.15); border: 1px solid var(--coalition-blue); color: #60a5fa; }
+        .faction-earth { background: rgba(34,197,94,0.15); border: 1px solid var(--success-green); color: #86efac; }
+        .faction-independent { background: rgba(107,114,128,0.15); border: 1px solid #6b7280; color: #d1d5db; }
+        .faction-flaxan { background: rgba(255,107,53,0.15); border: 1px solid var(--flaxan-orange); color: #fb923c; }
+
+        /* 最终总结 */
+        .final-summary {
+            margin-top: 30px;
+        }
+        .summary-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border-left: 3px solid var(--energy-cyan);
+        }
+        .summary-section h3 {
+            color: var(--energy-cyan);
+            font-size: 1rem;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .summary-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.95rem;
+        }
+        .summary-item:last-child { border-bottom: none; }
+
+        .overall-rarity {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .main-card { padding: 20px; }
+            .btn { padding: 12px 25px; font-size: 1rem; }
+            .progress-step { padding: 5px 10px; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="container">
+    <div class="header">
+        <h1>INVINCIBLE UNIVERSE</h1>
+        <div class="subtitle">分步抽取你的宇宙命运</div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-step" data-step="1">出生时间</div>
+        <div class="progress-step" data-step="2">出生星球</div>
+        <div class="progress-step" data-step="3">能力数量</div>
+        <div class="progress-step" data-step="4">能力抽取</div>
+        <div class="progress-step" data-step="5">事件参与</div>
+        <div class="progress-step" data-step="6">命运总结</div>
+    </div>
+
+    <!-- 主交互区 -->
+    <div class="main-card" id="mainCard">
+        <div id="contentArea">
+            <!-- 动态内容插入这里 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== 数据库 ==========
+
+    const timePeriods = [
+        { name: "阿加尔统治时期", desc: "维尔特鲁姆帝国第一任皇帝阿加尔统治的'黄金时代'，帝国刚开始银河征服", era: "远古", weight: 5 },
+        { name: "大清洗时代", desc: "阿加尔被刺后，摄政王斯拉格下令清除弱者，维尔特鲁姆人自相残杀，人口从70亿锐减至35亿", era: "远古", weight: 8 },
+        { name: "瘟疫病毒爆发期", desc: "赛达斯用自身DNA研发出针对维尔特鲁姆人的空气传播病毒，帝国几乎覆灭", era: "远古", weight: 7 },
+        { name: "帝国重建期", desc: "瘟疫后维尔特鲁姆帝国缓慢重建，开始更加隐蔽地渗透其他星球", era: "近代", weight: 10 },
+        { name: "诺兰降临地球前", desc: "诺兰·格雷森被派往地球执行潜伏任务之前，地球处于相对和平时期", era: "近代", weight: 12 },
+        { name: "诺兰地球潜伏期", desc: "诺兰以旅行作家身份生活，与黛比结婚，准备执行帝国接管计划", era: "近代", weight: 15 },
+        { name: "马克出生期", desc: "马克·格雷森出生，诺兰开始训练他，等待其力量觉醒", era: "现代", weight: 18 },
+        { name: "守护者大屠杀后", desc: "诺兰暴露身份杀死原版守护者团队，马克拒绝协助父亲，父子决裂", era: "现代", weight: 20 },
+        { name: "维尔特鲁姆战争期", desc: "马克、诺兰与赛达斯联手对抗帝国，最终摧毁维尔特鲁姆母星", era: "现代", weight: 18 },
+        { name: "无敌战争期", desc: "安斯特罗姆带来数十个邪恶马克版本入侵地球，造成前所未有的大破坏", era: "现代", weight: 15 },
+        { name: "机器人统治期", desc: "鲁迪·康纳斯克隆雷克斯身体，成为地球独裁者，最终被马克阻止", era: "未来", weight: 10 },
+        { name: "500年后", desc: "马克成为维尔特鲁姆皇帝改革帝国，不朽者统治地球，机器人被永久囚禁", era: "未来", weight: 5 }
+    ];
+
+    const planets = [
+        { name: "维尔特鲁姆(Viltrum)", desc: "维尔特鲁姆帝国母星，在战争中被摧毁", type: "帝国核心", rarity: "legendary", weight: 8 },
+        { name: "地球(Earth)", desc: "故事主舞台，人类与维尔特鲁姆人基因相似", type: "主舞台", rarity: "rare", weight: 25 },
+        { name: "塔莱斯克里亚(Talescria)", desc: "行星联盟首都，反维尔特鲁姆势力的核心基地", type: "联盟", rarity: "epic", weight: 12 },
+        { name: "特拉克斯(Thraxa)", desc: "虫型外星人母星，居民寿命仅9个月", type: "异星", rarity: "rare", weight: 10 },
+        { name: "乌诺帕(Unopa)", desc: "被维尔特鲁姆摧毁的星球，乌诺帕人被迫进行基因工程", type: "毁灭", rarity: "epic", weight: 8 },
+        { name: "盖尔达(Gelderia)", desc: "盖尔达里安人母星，科技发达，发明了科技夹克", type: "科技", rarity: "rare", weight: 10 },
+        { name: "格莱西亚主星(Glacia Prime)", desc: "被维尔特鲁姆帝国征服的冰封星球", type: "征服", rarity: "common", weight: 12 },
+        { name: "艾克雷翁(Aikreon)", desc: "被维尔特鲁姆帝国征服的星球", type: "征服", rarity: "common", weight: 12 },
+        { name: "火星(Mars)", desc: "寄生体(Sequids)的家园，变形火星人的领地", type: "近地", rarity: "rare", weight: 15 },
+        { name: "弗拉克森维度(Flaxan Dimension)", desc: "时间流速远快于地球的异次元，弗拉克森人母星所在", type: "异次元", rarity: "epic", weight: 8 },
+        { name: "荒芜宇宙(Wasteland Universe)", desc: "末日后的平行宇宙，一片废墟", type: "平行宇宙", rarity: "legendary", weight: 5 },
+        { name: "多元宇宙某处", desc: "无数平行现实中的某一个角落", type: "多元", rarity: "mythic", weight: 3 }
+    ];
+
+    const abilities = [
+        { name: "维尔特鲁姆生理", desc: "超级力量、速度、耐力、飞行、太空生存、近乎不朽", source: "维尔特鲁姆基因", type: "viltrumite", rarity: "legendary", weight: 15 },
+        { name: "分子操控", desc: "操控分子/亚原子结构，能量投射，物质转化", source: "政府衰变粒子实验", type: "tech", rarity: "legendary", weight: 8 },
+        { name: "不朽再生", desc: "真正的不朽，死亡后可复活，超级力量与飞行", source: "3000年前的未知事故", type: "magic", rarity: "legendary", weight: 6 },
+        { name: "反应性进化", desc: "每次濒死变得更强，超级力量，太空生存", source: "乌诺帕基因工程", type: "alien", rarity: "epic", weight: 8 },
+        { name: "科技夹克共生", desc: "外星共生装甲赋予超级力量、飞行、能量投射", source: "盖尔达里安科技", type: "tech", rarity: "epic", weight: 10 },
+        { name: "跨维度传送", desc: "穿越平行宇宙，多元宇宙旅行", source: "天生能力（宇宙平衡法则）", type: "magic", rarity: "legendary", weight: 5 },
+        { name: "怪物变身", desc: "变身为强大怪物，但每次会逆生长", source: "魔法诅咒", type: "magic", rarity: "rare", weight: 10 },
+        { name: "自我复制", desc: "创造多个复制体，共享意识", source: "中国古代诅咒", type: "magic", rarity: "rare", weight: 10 },
+        { name: "分子加速", desc: "使物体分子不稳定并引发爆炸", source: "政府植入物实验", type: "tech", rarity: "rare", weight: 12 },
+        { name: "恐龙变身", desc: "变身为恐龙形态，天才级智力", source: "解离性转化", type: "alien", rarity: "rare", weight: 10 },
+        { name: "战斗野兽之力", desc: "超越维尔特鲁姆人的力量，利爪可撕裂维尔特鲁姆皮肤", source: "种族天赋", type: "alien", rarity: "legendary", weight: 6 },
+        { name: "寄生体控制", desc: "寄生宿主并控制其行动，群体意识", source: "火星寄生体种族", type: "alien", rarity: "rare", weight: 8 },
+        { name: "时间操控", desc: "利用维度时间差进行快速进化", source: "弗拉克森维度", type: "alien", rarity: "epic", weight: 7 },
+        { name: "克隆与记忆转移", desc: "完美克隆身体并转移记忆", source: "毛勒双胞胎科技", type: "tech", rarity: "rare", weight: 10 },
+        { name: "心灵感应", desc: "读取思想，精神沟通", source: "乌诺帕基因工程", type: "alien", rarity: "rare", weight: 8 },
+        { name: "天才智力", desc: "超越人类极限的智力，科技创造", source: "天生/实验", type: "tech", rarity: "epic", weight: 12 },
+        { name: "暗影维度之力", desc: "操控暗影能量，空间扭曲", source: "暗影维度", type: "magic", rarity: "epic", weight: 6 },
+        { name: "龙之力", desc: "龙族血脉赋予的元素操控与变身", source: "龙族基因", type: "magic", rarity: "legendary", weight: 4 }
+    ];
+
+    const events = [
+        // === 远古时代（数千年前 ~ 马克出生前）===
+        { name: "阿加尔统治时期", desc: "维尔特鲁姆帝国第一任皇帝阿加尔的'黄金时代'", factions: ["维尔特鲁姆帝国"], era: ["远古"], minYear: -5000, weight: 5 },
+        { name: "阿加尔遇刺", desc: "赛达斯刺杀第一任皇帝阿加尔的历史时刻", factions: ["维尔特鲁姆帝国", "独立"], era: ["远古"], minYear: -4950, weight: 6 },
+        { name: "维尔特鲁姆大清洗", desc: "在摄政王斯拉格命令下，清除弱者的残酷内战", factions: ["维尔特鲁姆帝国"], era: ["远古"], minYear: -4940, weight: 8 },
+        { name: "帝国扩张与星球征服", desc: "维尔特鲁姆帝国开始银河征服，摧毁反抗星球", factions: ["维尔特鲁姆帝国"], era: ["远古"], minYear: -4900, weight: 15 },
+        { name: "乌诺帕毁灭", desc: "维尔特鲁姆对乌诺帕的毁灭，幸存者进行基因工程", factions: ["维尔特鲁姆帝国", "乌诺帕抵抗军"], era: ["远古"], minYear: -4800, weight: 10 },
+        { name: "瘟疫病毒传播", desc: "赛达斯研发的针对维尔特鲁姆人的空气传播病毒", factions: ["维尔特鲁姆帝国", "行星联盟"], era: ["远古"], minYear: -4700, weight: 7 },
+        { name: "行星联盟成立", desc: "赛达斯创立反维尔特鲁姆的行星联盟", factions: ["行星联盟"], era: ["远古"], minYear: -4690, weight: 6 },
+
+        // === 近代（马克出生前数十年）===
+        { name: "诺兰降临地球", desc: "诺兰·格雷森来到地球执行潜伏任务", factions: ["维尔特鲁姆帝国", "地球"], era: ["近代"], minYear: -20, weight: 12 },
+        { name: "诺兰与黛比结婚", desc: "诺兰以旅行作家身份与黛比结婚定居地球", factions: ["地球", "维尔特鲁姆帝国"], era: ["近代"], minYear: -18, weight: 8 },
+        { name: "原子伊芙诞生", desc: "伊芙在胎儿时期暴露于衰变粒子获得分子操控能力", factions: ["地球", "全球防御局"], era: ["近代"], minYear: -17, weight: 10 },
+        { name: "全球防御局成立", desc: "西塞尔担任局长，管理地球超人类事务", factions: ["地球", "全球防御局"], era: ["近代"], minYear: -30, weight: 12 },
+        { name: "原版守护者组建", desc: "不朽者、战神等组成第一代守护者团队", factions: ["地球", "守护者团队"], era: ["近代"], minYear: -25, weight: 10 },
+
+        // === 现代（马克觉醒前后及主线事件）===
+        { name: "马克力量觉醒", desc: "马克·格雷森获得维尔特鲁姆超能力", factions: ["地球"], era: ["现代"], minYear: 0, weight: 18 },
+        { name: "守护者大屠杀", desc: "诺兰暴露身份屠杀原版守护者团队", factions: ["地球", "维尔特鲁姆帝国"], era: ["现代"], minYear: 0, weight: 14 },
+        { name: "父子对决", desc: "马克拒绝协助父亲，诺兰最终离开地球", factions: ["地球", "维尔特鲁姆帝国"], era: ["现代"], minYear: 1, weight: 16 },
+        { name: "弗拉克森入侵", desc: "来自时间异次元弗拉克森人的多次入侵", factions: ["地球", "弗拉克森"], era: ["现代"], minYear: 1, weight: 16 },
+        { name: "火星寄生体危机", desc: "火星寄生体试图通过宇航员入侵地球", factions: ["地球", "火星"], era: ["现代"], minYear: 1, weight: 14 },
+        { name: "安斯特罗姆·利维登场", desc: "多元宇宙旅行者成为马克宿敌", factions: ["独立", "多元宇宙"], era: ["现代"], minYear: 2, weight: 12 },
+        { name: "征服来袭", desc: "帝国最强战士征服来到地球测试马克", factions: ["地球", "维尔特鲁姆帝国"], era: ["现代"], minYear: 2, weight: 14 },
+        { name: "维尔特鲁姆战争", desc: "摧毁维尔特鲁姆母星的决定性战争", factions: ["行星联盟", "维尔特鲁姆帝国叛变者"], era: ["现代"], minYear: 3, weight: 18 },
+        { name: "无敌战争", desc: "数十个邪恶马克版本入侵地球的末日场景", factions: ["地球", "多元宇宙"], era: ["现代"], minYear: 3, weight: 16 },
+        { name: "机器人背叛", desc: "鲁迪克隆雷克斯身体，成为地球独裁者", factions: ["地球", "反抗军"], era: ["现代"], minYear: 5, weight: 10 },
+
+        // === 未来时代 ===
+        { name: "机器人统治期", desc: "鲁迪·康纳斯成为地球独裁者的压迫时代", factions: ["地球", "反抗军"], era: ["未来"], minYear: 6, weight: 10 },
+        { name: "斯拉格复仇", desc: "斯拉格带着混血后代试图重新征服地球", factions: ["地球", "行星联盟"], era: ["现代"], minYear: 6, weight: 12 },
+        { name: "马克成为皇帝", desc: "马克成为维尔特鲁姆皇帝并改革帝国", factions: ["维尔特鲁姆帝国"], era: ["未来"], minYear: 100, weight: 6 },
+        { name: "500年后结局", desc: "马克统治帝国，不朽者统治地球，机器人被永久囚禁", factions: ["维尔特鲁姆帝国", "地球"], era: ["未来"], minYear: 500, weight: 5 }
+    ];
+
+    const factions = [
+        { name: "维尔特鲁姆帝国", desc: "以力量和征服为核心的星际帝国", style: "faction-viltrum" },
+        { name: "行星联盟", desc: "赛达斯创立的反维尔特鲁姆联盟", style: "faction-coalition" },
+        { name: "地球/全球防御局", desc: "地球超人类管理机构", style: "faction-earth" },
+        { name: "守护者团队", desc: "地球最强超级英雄团队", style: "faction-earth" },
+        { name: "弗拉克森", desc: "来自时间异次元的入侵者", style: "faction-flaxan" },
+        { name: "独立/自由战士", desc: "不属于任何大势力，为自由而战", style: "faction-independent" },
+        { name: "多元宇宙势力", desc: "跨越平行现实的神秘存在", style: "faction-independent" },
+        { name: "乌诺帕抵抗军", desc: "被毁灭星球的幸存者抵抗组织", style: "faction-independent" }
+    ];
+
+    const roleNames = [
+        "暗影行者", "星际浪人", "破碎之刃", "虚空守望者", "命运编织者",
+        "血色黎明", "静默猎手", "维度旅者", "钢铁意志", "混沌之息",
+        "永恒回响", "陨落星辰", "深渊凝视", "极光之翼", "末日先知",
+        "时空裂隙", "虚空吞噬者", "星陨裁决", "混沌守望", "无尽轮回"
+    ];
+
+    // ========== 工具函数 ==========
+
+    function weightedRandom(items) {
+        const totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0);
+        let random = Math.random() * totalWeight;
+        for (const item of items) {
+            random -= (item.weight || 1);
+            if (random <= 0) return item;
+        }
+        return items[items.length - 1];
+    }
+
+    function getRarityClass(rarity) {
+        const map = { common: 'rarity-common', rare: 'rarity-rare', epic: 'rarity-epic', legendary: 'rarity-legendary', mythic: 'rarity-mythic' };
+        return map[rarity] || 'rarity-common';
+    }
+    function getRarityText(rarity) {
+        const map = { common: '普通', rare: '稀有', epic: '史诗', legendary: '传说', mythic: '神话' };
+        return map[rarity] || '普通';
+    }
+
+    function updateProgress(step) {
+        document.querySelectorAll('.progress-step').forEach(el => {
+            const s = parseInt(el.dataset.step);
+            el.classList.remove('active', 'done');
+            if (s < step) el.classList.add('done');
+            else if (s === step) el.classList.add('active');
+        });
+    }
+
+    // ========== 全局状态 ==========
+
+    let gameState = {
+        step: 1,
+        timePeriod: null,
+        planet: null,
+        abilityCount: 0,
+        abilities: [],
+        events: [],
+        currentAbilityIndex: 0,
+        currentEventIndex: 0,
+        roleName: ''
+    };
+
+    // ========== 星空背景 ==========
+
+    function createStars() {
+        const container = document.getElementById('stars');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            star.style.animationDelay = Math.random() * 5 + 's';
+            container.appendChild(star);
+        }
+    }
+
+    // ========== 各步骤渲染函数 ==========
+
+    function renderStep1() {
+        updateProgress(1);
+        const content = document.getElementById('contentArea');
+        content.innerHTML = `
+        <div class="step-title">🕐 第一步：抽取出生时间</div>
+        <div class="step-desc">你将在无敌少侠宇宙的哪个时代诞生？</div>
+        <div class="btn-area">
+            <button class="btn btn-primary" onclick="drawTime()">⚡ 抽取时间坐标 ⚡</button>
+        </div>
+        <div id="step1Result"></div>
+    `;
+    }
+
+    // 删除或注释掉 timePeriods 数组（不再需要）
+
+    // 修改 drawTime() 函数
+    function drawTime() {
+        // 从 events 中抽取一个事件作为出生时间点
+        const result = weightedRandom(events);
+        gameState.timePeriod = result;  // 复用 timePeriod 字段存储这个事件
+
+        document.getElementById('step1Result').innerHTML = `
+    <div class="result-box">
+        <div class="result-label">出生时间节点</div>
+        <div class="result-value">
+            <span class="rare-name">${result.name}</span>
+            <span class="rarity-tag">${result.era}</span>
+        </div>
+        <div class="result-detail">你诞生于「${result.name}」时期<br>${result.desc}</div>
+    </div>
+    <div class="btn-area">
+        <button class="btn btn-next" onclick="goToStep2()">下一步：抽取星球 →</button>
+    </div>
+    `;
+    }
+
+    function goToStep2() {
+        gameState.step = 2;
+        renderStep2();
+    }
+
+    function renderStep2() {
+        updateProgress(2);
+        const content = document.getElementById('contentArea');
+        content.innerHTML = `
+        <div class="step-title">🌍 第二步：抽取出生星球</div>
+        <div class="step-desc">你将在哪个星球或维度诞生？</div>
+        <div class="result-box" style="opacity:0.7;">
+            <div class="result-label">已抽取的时间</div>
+            <div class="result-value" style="font-size:1.1rem;">${gameState.timePeriod.name}</div>
+        </div>
+        <div class="btn-area">
+            <button class="btn btn-primary" onclick="drawPlanet()">⚡ 抽取星球坐标 ⚡</button>
+        </div>
+        <div id="step2Result"></div>
+    `;
+    }
+
+    function drawPlanet() {
+        const result = weightedRandom(planets);
+        gameState.planet = result;
+
+        document.getElementById('step2Result').innerHTML = `
+        <div class="result-box">
+            <div class="result-label">出生星球</div>
+            <div class="result-value">
+                <span class="rare-name">${result.name}</span>
+                <span class="rarity-tag ${getRarityClass(result.rarity)}">${getRarityText(result.rarity)}</span>
+            </div>
+            <div class="result-detail">${result.desc}</div>
+        </div>
+        <div class="btn-area">
+            <button class="btn btn-next" onclick="goToStep3()">下一步：抽取能力数量 →</button>
+        </div>
+    `;
+    }
+
+    function goToStep3() {
+        gameState.step = 3;
+        renderStep3();
+    }
+
+    function renderStep3() {
+        updateProgress(3);
+        const content = document.getElementById('contentArea');
+        content.innerHTML = `
+        <div class="step-title">⚡ 第三步：抽取能力数量</div>
+        <div class="step-desc">你天生拥有几项超能力？（2-4项）</div>
+        <div class="result-box" style="opacity:0.7;">
+            <div class="result-label">已确定</div>
+            <div class="result-value" style="font-size:1rem;">
+                ${gameState.timePeriod.name} · ${gameState.planet.name}
+            </div>
+        </div>
+        <div class="btn-area">
+            <button class="btn btn-primary" onclick="drawAbilityCount()">🎲 随机抽取数量</button>
+        </div>
+        <div id="step3Result"></div>
+    `;
+    }
+
+    function drawAbilityCount() {
+        const count = Math.floor(Math.random() * 3) + 2; // 2-4
+        gameState.abilityCount = count;
+
+        document.getElementById('step3Result').innerHTML = `
+        <div class="result-box">
+            <div class="result-label">能力数量</div>
+            <div class="result-value">
+                <span class="rare-name">${count} 项能力</span>
+            </div>
+            <div class="result-detail">你将在接下来的步骤中逐个抽取这 ${count} 项能力</div>
+        </div>
+        <div class="btn-area">
+            <button class="btn btn-next" onclick="goToStep4()">下一步：开始抽取能力 →</button>
+        </div>
+    `;
+    }
+
+    function goToStep4() {
+        gameState.step = 4;
+        gameState.currentAbilityIndex = 0;
+        gameState.abilities = [];
+        renderStep4();
+    }
+
+    function renderStep4() {
+        updateProgress(4);
+        const content = document.getElementById('contentArea');
+        const current = gameState.currentAbilityIndex;
+        const total = gameState.abilityCount;
+
+        // 显示已抽取的能力
+        let abilitiesHtml = '';
+        for (let i = 0; i < total; i++) {
+            if (i < gameState.abilities.length) {
+                const a = gameState.abilities[i];
+                abilitiesHtml += `
+                <div class="ability-slot filled">
+                    <div class="ability-info">
+                        <div class="ability-name">${a.name} <span class="rarity-tag ${getRarityClass(a.rarity)}">${getRarityText(a.rarity)}</span></div>
+                        <div class="ability-source">${a.desc} | 来源：${a.source}</div>
+                    </div>
+                </div>
+            `;
+            } else if (i === current) {
+                abilitiesHtml += `
+                <div class="ability-slot empty" style="border-color: var(--viltrum-gold);">
+                    <div class="ability-info">
+                        <div class="ability-name" style="color: var(--viltrum-gold);">⏳ 第 ${i+1} 项能力（待抽取）</div>
+                    </div>
+                </div>
+            `;
+            } else {
+                abilitiesHtml += `
+                <div class="ability-slot empty">
+                    <div class="ability-info">
+                        <div class="ability-name">🔒 第 ${i+1} 项能力（未解锁）</div>
+                    </div>
+                </div>
+            `;
+            }
+        }
+
+        const isLast = current >= total;
+
+        content.innerHTML = `
+        <div class="step-title">⚡ 第四步：逐个抽取能力 (${current}/${total})</div>
+        <div class="step-desc">逐个揭示你的超能力...</div>
+        <div class="result-box" style="opacity:0.7;">
+            <div class="result-label">已确定</div>
+            <div class="result-value" style="font-size:1rem;">
+                ${gameState.timePeriod.name} · ${gameState.planet.name} · ${total}项能力
+            </div>
+        </div>
+
+        <div style="margin: 20px 0;">
+            ${abilitiesHtml}
+        </div>
+
+        <div class="btn-area" id="abilityBtnArea">
+            ${!isLast ? `
+                <button class="btn btn-primary" onclick="drawOneAbility()">⚡ 抽取第 ${current+1} 项能力 ⚡</button>
+            ` : `
+                <button class="btn btn-next" onclick="goToStep5()">下一步：事件参与 →</button>
+            `}
+        </div>
+    `;
+    }
+
+    function drawOneAbility() {
+        // 过滤已抽取的能力避免重复
+        const available = abilities.filter(a => !gameState.abilities.find(g => g.name === a.name));
+        const pool = available.length > 0 ? available : abilities;
+        const result = weightedRandom(pool);
+
+        gameState.abilities.push(result);
+        gameState.currentAbilityIndex++;
+
+        renderStep4();
+    }
+
+    const eraBaseYear = {
+        "远古": -5000,   // 数千年前
+        "近代": -20,     // 诺兰来到地球前后
+        "现代": 0,       // 马克觉醒前后
+        "未来": 500      // 500年后
+    };
+
+    // 3. 修改 goToStep5 函数：按时间顺序筛选出生后的事件
+    function goToStep5() {
+        gameState.step = 5;
+        gameState.currentEventIndex = 0;
+        gameState.events = [];
+
+        // 出生时间节点的年份
+        const birthYear = gameState.timePeriod.minYear;
+
+        // 筛选在出生年份之后发生的事件（排除出生事件本身）
+        const eligibleEvents = events.filter(e => {
+            return e.minYear > birthYear;  // 严格大于，避免重复抽取同一个事件
+        });
+
+        // 按时间顺序排序
+        gameState.shuffledEvents = eligibleEvents.sort((a,b) => a.minYear - b.minYear);
+
+        renderStep5();
+    }
+
+    function renderStep5() {
+        updateProgress(5);
+        const content = document.getElementById('contentArea');
+        const current = gameState.currentEventIndex;
+        const totalEvents = gameState.shuffledEvents.length; // 最多问5个事件
+
+        if (current >= totalEvents) {
+            renderStep5Summary();
+            return;
+        }
+
+        const evt = gameState.shuffledEvents[current];
+
+        // 显示已回答的事件
+        let answeredHtml = '';
+        gameState.events.forEach((e, i) => {
+            const statusClass = e.participated ? 'participated' : 'skipped';
+            const statusText = e.participated ? '✅ 参与' : '❌ 未参与';
+            answeredHtml += `
+            <div class="event-question ${statusClass}">
+                <div class="event-name">${e.event.name}</div>
+                <div class="event-desc">${e.event.desc}</div>
+                <div style="color: ${e.participated ? 'var(--success-green)' : 'var(--danger-red)'}; font-weight: 700;">
+                    ${statusText}${e.participated ? ' · 势力：' + e.faction.name : ''}
+                </div>
+                ${e.participated ? `<div class="faction-result ${e.faction.style}">${e.faction.name} — ${e.faction.desc}</div>` : ''}
+            </div>
+        `;
+        });
+
+        content.innerHTML = `
+        <div class="step-title">📜 第五步：事件参与 (${current+1}/${totalEvents})</div>
+        <div class="step-desc">逐个询问你是否参与了以下历史事件...</div>
+
+        <div class="result-box" style="opacity:0.7;">
+            <div class="result-label">已确定</div>
+            <div class="result-value" style="font-size:1rem;">
+                ${gameState.timePeriod.name} · ${gameState.planet.name} · ${gameState.abilityCount}项能力
+            </div>
+        </div>
+
+        ${answeredHtml}
+
+        <div class="event-question" id="currentEvent">
+            <div class="event-era">📅 ${gameState.timePeriod.era}时代 · 出生后事件</div>
+            <div class="event-name">${evt.name}</div>
+            <div class="event-desc">${evt.desc}</div>
+            <div class="btn-area" style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="answerEvent()">🎲 抽取是否参与</button>
+            </div>
+        </div>
+    `;
+    }
+
+    function answerEvent() {  // 不再需要布尔参数
+        const evt = gameState.shuffledEvents[gameState.currentEventIndex];
+        // 抽取是否参与: 30%概率参与，70%概率不参与（可根据事件重要性调整权重）
+        const participated = Math.random() < 0.5;
+
+        if (participated) {
+            const factionName = evt.factions[Math.floor(Math.random() * evt.factions.length)];
+            const faction = factions.find(f => f.name.includes(factionName)) || factions[5];
+            gameState.events.push({
+                event: evt,
+                participated: true,
+                faction: faction
+            });
+        } else {
+            gameState.events.push({
+                event: evt,
+                participated: false,
+                faction: null
+            });
+        }
+
+        gameState.currentEventIndex++;
+        renderStep5();
+    }
+
+    function renderStep5Summary() {
+        const content = document.getElementById('contentArea');
+        const participated = gameState.events.filter(e => e.participated);
+
+        let eventsHtml = '';
+        gameState.events.forEach(e => {
+            const statusClass = e.participated ? 'participated' : 'skipped';
+            eventsHtml += `
+            <div class="event-question ${statusClass}">
+                <div class="event-name">${e.event.name}</div>
+                <div class="event-desc">${e.event.desc}</div>
+                <div style="color: ${e.participated ? 'var(--success-green)' : 'var(--danger-red)'}; font-weight: 700;">
+                    ${e.participated ? '✅ 参与' : '❌ 未参与'}
+                </div>
+                ${e.participated ? `<div class="faction-result ${e.faction.style}">${e.faction.name} — ${e.faction.desc}</div>` : ''}
+            </div>
+        `;
+        });
+
+        content.innerHTML = `
+        <div class="step-title">📜 第五步完成：事件参与总结</div>
+        <div class="step-desc">你参与了 ${participated.length} 个事件，跳过 ${gameState.events.length - participated.length} 个</div>
+
+        <div style="margin: 20px 0;">
+            ${eventsHtml}
+        </div>
+
+        <div class="btn-area">
+            <button class="btn btn-next" onclick="goToStep6()">下一步：查看命运总结 →</button>
+        </div>
+    `;
+    }
+
+    function goToStep6() {
+        gameState.step = 6;
+        gameState.roleName = roleNames[Math.floor(Math.random() * roleNames.length)];
+        renderStep6();
+    }
+
+    function renderStep6() {
+        updateProgress(6);
+        const content = document.getElementById('contentArea');
+
+        // 计算综合稀有度
+        const rarityScores = { common: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 };
+        let totalScore = rarityScores[gameState.planet.rarity] || 1;
+        gameState.abilities.forEach(a => totalScore += (rarityScores[a.rarity] || 1));
+        const avgScore = totalScore / (1 + gameState.abilities.length);
+
+        let overallRarity = 'common';
+        if (avgScore >= 4.5) overallRarity = 'mythic';
+        else if (avgScore >= 3.5) overallRarity = 'legendary';
+        else if (avgScore >= 2.5) overallRarity = 'epic';
+        else if (avgScore >= 1.5) overallRarity = 'rare';
+
+        const participated = gameState.events.filter(e => e.participated);
+
+        content.innerHTML = `
+        <div class="step-title">🎭 第六步：命运总结</div>
+
+        <div class="overall-rarity ${getRarityClass(overallRarity)}">
+            ${gameState.roleName}<br>
+            <span style="font-size:0.9rem;">${getRarityText(overallRarity)} 命运</span>
+        </div>
+
+        <div class="final-summary">
+            <div class="summary-section">
+                <h3>📅 出生信息</h3>
+                <div class="summary-item"><b>时间：</b>${gameState.timePeriod.name} (${gameState.timePeriod.era})</div>
+                <div class="summary-item"><b>星球：</b>${gameState.planet.name} [${getRarityText(gameState.planet.rarity)}]</div>
+                <div class="summary-item" style="color:rgba(240,240,245,0.6);font-size:0.9rem;">${gameState.timePeriod.desc}</div>
+                <div class="summary-item" style="color:rgba(240,240,245,0.6);font-size:0.9rem;">${gameState.planet.desc}</div>
+            </div>
+
+            <div class="summary-section">
+                <h3>⚡ 能力 (${gameState.abilities.length}项)</h3>
+                ${gameState.abilities.map(a => `
+                    <div class="summary-item">
+                        <b>${a.name}</b> <span class="rarity-tag ${getRarityClass(a.rarity)}">${getRarityText(a.rarity)}</span><br>
+                        <span style="color:rgba(240,240,245,0.6);font-size:0.85rem;">${a.desc} | 来源：${a.source}</span>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="summary-section">
+                <h3>📜 参与事件 (${participated.length}项)</h3>
+                ${participated.length > 0 ? participated.map(e => `
+                    <div class="summary-item">
+                        <b>${e.event.name}</b><br>
+                        <span style="color:rgba(240,240,245,0.6);font-size:0.85rem;">${e.event.desc}</span><br>
+                        <span class="faction-result ${e.faction.style}" style="display:inline-block;margin-top:5px;">${e.faction.name}</span>
+                    </div>
+                `).join('') : '<div class="summary-item" style="color:rgba(240,240,245,0.4);">你没有参与任何重大历史事件，选择了一条孤独的道路...</div>'}
+            </div>
+
+            <div class="summary-section">
+                <h3>🎭 势力归属</h3>
+                ${participated.length > 0 ? [...new Set(participated.map(e => e.faction.name))].map(name => {
+            const f = participated.find(e => e.faction.name === name).faction;
+            return `<div class="summary-item"><span class="faction-result ${f.style}" style="display:inline-block;">${f.name}</span> — ${f.desc}</div>`;
+        }).join('') : '<div class="summary-item" style="color:rgba(240,240,245,0.4);">无势力归属 — 独立自由战士</div>'}
+            </div>
+        </div>
+
+        <div class="btn-area" style="margin-top: 40px;">
+            <button class="btn btn-primary" onclick="restart()" style="font-size:1.2rem;padding:18px 50px;">
+                🔄 重新开始命运之旅
+            </button>
+        </div>
+    `;
+    }
+
+    function restart() {
+        gameState = {
+            step: 1,
+            timePeriod: null,
+            planet: null,
+            abilityCount: 0,
+            abilities: [],
+            events: [],
+            currentAbilityIndex: 0,
+            currentEventIndex: 0,
+            shuffledEvents: [],
+            roleName: ''
+        };
+        renderStep1();
+    }
+
+    // ========== 初始化 ==========
+
+    createStars();
+    renderStep1();
+</script>
+</body>
+</html>)
